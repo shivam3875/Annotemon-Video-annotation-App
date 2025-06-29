@@ -1,0 +1,451 @@
+// Line Component with Transformer
+// const LineShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+//   const shapeRef = useRef();
+//   const trRef = useRef();
+
+//   useEffect(() => {
+//     if (isSelected && trRef.current && shapeRef.current) {
+//       trRef.current.nodes([shapeRef.current]);
+//       trRef.current.getLayer().batchDraw();
+//     }
+//   }, [isSelected]);
+
+//   return (
+//     <>
+//       <Line
+//         onClick={onSelect}
+//         ref={shapeRef}
+//         {...shapeProps}
+//         draggable
+//         onDragEnd={e => {
+//           onChange({
+//             ...shapeProps,
+//             x: e.target.x(),
+//             y: e.target.y(),
+//           });
+//         }}
+//         onTransformEnd={e => {
+//           const node = shapeRef.current;
+//           const scaleX = node.scaleX();
+//           const scaleY = node.scaleY();
+//           node.scaleX(1);
+//           node.scaleY(1);
+//           // Update the points by scaling
+//           const newPoints = node.points().map((p, idx) =>
+//             idx % 2 === 0 ? p * scaleX : p * scaleY
+//           );
+//           onChange({
+//             ...shapeProps,
+//             x: node.x(),
+//             y: node.y(),
+//             points: newPoints,
+//           });
+//         }}
+//       />
+//       {isSelected && <Transformer ref={trRef} enabledAnchors={['middle-left', 'middle-right']}/>}
+//     </>
+//   );
+// };
+
+
+
+
+
+
+
+
+// Line component with draggable endpoints + Transformer
+// const EditableLineShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+//   const shapeRef = useRef();
+//   const trRef = useRef();
+
+//   // Transformer logic (for selection, scaling, rotating)
+//   useEffect(() => {
+//     if (isSelected && trRef.current && shapeRef.current) {
+//       trRef.current.nodes([shapeRef.current]);
+//       trRef.current.getLayer().batchDraw();
+//     }
+//   }, [isSelected]);
+
+//   // Handle endpoint drag
+//   const handlePointDrag = (idx, e) => {
+//     const newPoints = shapeProps.points.slice();
+//     newPoints[idx * 2] = e.target.x();
+//     newPoints[idx * 2 + 1] = e.target.y();
+//     onChange({
+//       ...shapeProps,
+//       points: newPoints,
+//     });
+//   };
+
+//   return (
+//     <>
+//       {/* The main line */}
+//       <Line
+//         onClick={onSelect}
+//         ref={shapeRef}
+//         {...shapeProps}
+//         draggable
+//         onDragEnd={e => {
+//           // Move both points by drag offset
+//           const dx = e.target.x() - (shapeProps.x || 0);
+//           const dy = e.target.y() - (shapeProps.y || 0);
+//           const newPoints = shapeProps.points.map((p, i) =>
+//             i % 2 === 0 ? p + dx : p + dy
+//           );
+//           onChange({
+//             ...shapeProps,
+//             x: 0, // reset x/y because we're applying to points
+//             y: 0,
+//             points: newPoints,
+//           });
+//         }}
+//         onTransformEnd={e => {
+//           // Optionally handle scaling/rotation
+//         }}
+//       />
+//       {/* Endpoints as draggable circles */}
+//       {shapeProps.points && shapeProps.points.length === 4 && (
+//         <>
+//           {/* Start point handle */}
+//           <Circle
+//             x={shapeProps.points[0]}
+//             y={shapeProps.points[1]}
+//             radius={8}
+//             fill="blue"
+//             draggable
+//             onDragMove={e => handlePointDrag(0, e)}
+//             onClick={onSelect}
+//           />
+//           {/* End point handle */}
+//           <Circle
+//             x={shapeProps.points[2]}
+//             y={shapeProps.points[3]}
+//             radius={8}
+//             fill="green"
+//             draggable
+//             onDragMove={e => handlePointDrag(1, e)}
+//             onClick={onSelect}
+//           />
+//         </>
+//       )}
+//       {isSelected && <Transformer ref={trRef} />}
+//     </>
+//   );
+// };
+
+
+
+
+
+
+
+
+
+
+
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.10",
+    "daisyui": "^5.0.43",
+    "konva": "^9.3.20",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
+    "react-konva": "^19.0.6",
+    "tailwindcss": "^4.1.10"
+  },
+
+
+
+  "canvas": "^2.11.2",
+
+
+
+
+
+
+
+
+
+
+
+  // annotations: aapka shapes/annotations ka array ya JSON
+// videoURL: server-side video file ka path (e.g. "/uploads/abc123.mp4")
+
+async function sendOverlayRequest(videoURL, annotations) {
+  try {
+    const res = await fetch("http://localhost:5000/overlay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        videoPath: videoURL,       // Server-side path
+        annotations: annotations   // Array ya JSON object
+      })
+    });
+    const data = await res.json();
+    // data me aapko output video ka path/url mil sakta hai
+    console.log("Overlay response:", data);
+    return data;
+  } catch (err) {
+    alert("Overlay request failed");
+    console.error(err);
+  }
+}
+
+// Example usage:
+sendOverlayRequest(videoURL, annotations);
+
+
+
+import React from 'react';
+import { Stage, Layer, Line, Text } from 'react-konva';
+
+const App = () => {
+  const [tool, setTool] = React.useState('pen');
+  const [lines, setLines] = React.useState([]);
+  const isDrawing = React.useRef(false);
+
+  const handleMouseDown = (e) => {
+    isDrawing.current = true;
+    const pos = e.target.getStage().getPointerPosition();
+    setLines([...lines, { tool, points: [pos.x, pos.y] }]);
+  };
+
+  const handleMouseMove = (e) => {
+    // no drawing - skipping
+    if (!isDrawing.current) {
+      return;
+    }
+    const stage = e.target.getStage();
+    const point = stage.getPointerPosition();
+    let lastLine = lines[lines.length - 1];
+    // add point
+    lastLine.points = lastLine.points.concat([point.x, point.y]);
+
+    // replace last
+    lines.splice(lines.length - 1, 1, lastLine);
+    setLines(lines.concat());
+  };
+
+  const handleMouseUp = () => {
+    isDrawing.current = false;
+  };
+
+  return (
+    <div>
+      <select
+        value={tool}
+        onChange={(e) => {
+          setTool(e.target.value);
+        }}
+      >
+        <option value="pen">Pen</option>
+        <option value="eraser">Eraser</option>
+      </select>
+      <Stage
+        width={window.innerWidth}
+        height={window.innerHeight}
+        onMouseDown={handleMouseDown}
+        onMousemove={handleMouseMove}
+        onMouseup={handleMouseUp}
+        onTouchStart={handleMouseDown}
+        onTouchMove={handleMouseMove}
+        onTouchEnd={handleMouseUp}
+      >
+        <Layer>
+          <Text text="Just start drawing" x={5} y={30} />
+          {lines.map((line, i) => (
+            <Line
+              key={i}
+              points={line.points}
+              stroke="#df4b26"
+              strokeWidth={5}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation={
+                line.tool === 'eraser' ? 'destination-out' : 'source-over'
+              }
+            />
+          ))}
+        </Layer>
+      </Stage>
+    </div>
+  );
+};
+
+export default App;
+
+
+
+
+//export freedrawing
+if (shape.type === 'freedraw') {
+  return {
+    type: 'freedraw',
+    points: shape.points,
+    stroke: shape.stroke,
+    strokeWidth: shape.strokeWidth,
+  };
+}
+
+
+//example annotation for free drawing
+{
+  type: "freedraw",
+  points: [x1, y1, x2, y2, x3, y3, ...],
+  stroke: "#df4b26",
+  strokeWidth: 4,
+  fill: null, // usually null for free drawing
+  startTime: ...,
+  endTime: ...,
+}
+
+
+//fre drawing with tention on node canvas
+
+function drawSmoothCurve(ctx, points, tension = 0.5) {
+  if (points.length < 4) {
+    // Kam points hain to seedha line bana do
+    ctx.beginPath();
+    ctx.moveTo(points[0], points[1]);
+    for (let i = 2; i < points.length; i += 2) {
+      ctx.lineTo(points[i], points[i + 1]);
+    }
+    ctx.stroke();
+    return;
+  }
+
+  // Helper: Catmull-Rom spline ke liye control points nikaalo
+  function getControlPoints(p0, p1, p2, p3, t) {
+    // p0, p1, p2, p3: [x, y] arrays
+    const d1 = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+    const d2 = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+    const d3 = Math.hypot(p3[0] - p2[0], p3[1] - p2[1]);
+
+    const d1a = d1 === 0 ? 1 : d1;
+    const d2a = d2 === 0 ? 1 : d2;
+    const d3a = d3 === 0 ? 1 : d3;
+
+    const A = [
+      (p2[0] - p0[0]) / (d1a + d2a),
+      (p2[1] - p0[1]) / (d1a + d2a)
+    ];
+    const B = [
+      (p3[0] - p1[0]) / (d2a + d3a),
+      (p3[1] - p1[1]) / (d2a + d3a)
+    ];
+
+    const cp1 = [
+      p1[0] + A[0] * d1a * t,
+      p1[1] + A[1] * d1a * t
+    ];
+    const cp2 = [
+      p2[0] - B[0] * d2a * t,
+      p2[1] - B[1] * d2a * t
+    ];
+
+    return [cp1, cp2];
+  }
+
+  // Points ko [x, y] pairs me convert karo
+  const pts = [];
+  for (let i = 0; i < points.length; i += 2) {
+    pts.push([points[i], points[i + 1]]);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+
+  for (let i = 1; i < pts.length - 2; i++) {
+    const [cp1, cp2] = getControlPoints(
+      pts[i - 1], pts[i], pts[i + 1], pts[i + 2], tension
+    );
+    ctx.bezierCurveTo(
+      cp1[0], cp1[1],
+      cp2[0], cp2[1],
+      pts[i + 1][0], pts[i + 1][1]
+    );
+  }
+
+  // Last segment ko line se close karo
+  ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
+  ctx.stroke();
+}
+
+
+if (
+  currentTime >= a.startTime &&
+  currentTime <= a.endTime &&
+  (a.type === "freedraw" || a.type === "path")
+) {
+  ctx.save();
+  ctx.strokeStyle = a.stroke || "#df4b26";
+  ctx.lineWidth = a.strokeWidth || 4;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  drawSmoothCurve(ctx, a.points, a.tension || 0.5); // <-- yahan tension set kar sakte hain
+  ctx.restore();
+}
+
+
+
+
+//handle image uploads
+
+const handleImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      addImage(ev.target.result); // base64 string
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+
+//button and input for file uploads
+<button onClick={() => addImage("https://konvajs.org/assets/yoda.jpg")}>
+  Add Sample Image
+</button>
+<input
+  type="file"
+  accept="image/*"
+  style={{ display: "inline", marginLeft: 8 }}
+  onChange={handleImageUpload}
+/>
+
+
+//render image shape
+import EditableImageShape from "./EditableImageShape"; // path as needed
+
+// Inside shapes.map(...)
+if (shape.type === "image") {
+  return (
+    <EditableImageShape
+      key={shape.id}
+      shapeProps={shape}
+      isSelected={shape.id === selectedId}
+      onSelect={() => { setSelectedId(shape.id); setSelectedType(shape.type); }}
+      onChange={newAttrs => handleShapeChange(i, newAttrs)}
+    />
+  );
+}
+
+
+//export shape
+if (shape.type === 'image') {
+      return {
+        type: 'image',
+        id: shape.id,
+        x: shape.x,
+        y: shape.y,
+        width: shape.width,
+        height: shape.height,
+        rotation: shape.rotation,
+        src: shape.src
+      };
+    }
