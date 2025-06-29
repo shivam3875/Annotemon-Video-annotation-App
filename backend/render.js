@@ -1,8 +1,8 @@
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createCanvas,loadImage } from "canvas";
 import ffmpeg from "fluent-ffmpeg";
+import { Readable } from "stream";
 
 
 ffmpeg.setFfmpegPath("C:/Users/kumar/Downloads/ffmpeg/ffmpeg.exe");
@@ -85,12 +85,6 @@ function drawSmoothCurve(ctx, points, tension = 0.5) {
 async function render(videoPath, annotations, outputPath) {
   return new Promise((resolve, reject) => {
     try {
-      // Prepare temp frames folder
-      const tempDir = path.join(__dirname, 'temp');
-      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
-
-      // Clear old temp frames
-      fs.readdirSync(tempDir).forEach(f => fs.unlinkSync(path.join(tempDir, f)));
 
       // Get video info (dimensions and fps) using ffprobe
       ffmpeg.ffprobe(videoPath, async (err, metadata) => {  //yahan change kiya sync krdiya
@@ -115,9 +109,45 @@ async function render(videoPath, annotations, outputPath) {
         const duration = metadata.format.duration;
         const totalFrames = Math.floor(duration * fps);
 
+        const imageCache = {}; //image cache
+        const imageAnnots = annotations.filter(a => a.type === "image");
+        for (const a of imageAnnots) {
+          if (!imageCache[a.src]) {
+            imageCache[a.src] = await loadImage(a.src);
+          }
+        }
+
         // Create canvas with video dimensions
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
+
+        // --- Create frameStream here ---
+        const frameStream = new Readable({
+          read() {} // We'll push data manually
+        });
+
+        // --- Start ffmpeg process here ---
+        const ffmpegProcess = ffmpeg()
+          .input(frameStream)
+          .inputFormat('image2pipe')
+          .inputOptions('-framerate', `${fps}`)
+          .input(videoPath)
+          .complexFilter('[1:v][0:v] overlay=0:0')
+          .outputOptions([
+            '-c:v', 'libx264',
+            '-pix_fmt', 'yuv420p',
+            '-preset', 'fast',
+            '-crf', '23'
+          ])
+          .on('error', (err) => {
+            console.error('FFmpeg error:', err.message);
+            if (ffmpegProcess && ffmpegProcess.kill) {
+              ffmpegProcess.kill('SIGKILL');
+            }
+            reject(err)
+          })
+          .on('end', () => resolve())
+          .save(outputPath);
 
         // Draw overlay frame PNGs
         for (let i = 0; i < totalFrames; i++) {
@@ -125,7 +155,6 @@ async function render(videoPath, annotations, outputPath) {
 
           // Clear canvas
           ctx.clearRect(0, 0, width, height);
-          const imageCache = {};
 
           for (const a of annotations) {
               if (currentTime >= a.startTime && currentTime <= a.endTime && a.type=="rect") {
@@ -203,7 +232,7 @@ async function render(videoPath, annotations, outputPath) {
                   // Underline if needed
                   if (a.textDecoration === "underline") {
                     const metrics = ctx.measureText(line);
-                    const underlineY = i * lineHeight + 4; // 4px below baseline
+                    const underlineY = i * lineHeight + ascent + Math.max(4, fontSize / 6); // 4px below baseline
                     ctx.beginPath();
                     ctx.strokeStyle = a.fontColor || "#000000";
                     ctx.lineWidth = Math.max(1, Math.floor(fontSize / 15));
@@ -228,50 +257,28 @@ async function render(videoPath, annotations, outputPath) {
                 ctx.restore();
               }
               if (currentTime >= a.startTime && currentTime <= a.endTime && a.type === "image") {
-                let img = imageCache[a.src];
-                if (!img) {
-                  img = await loadImage(a.src);
-                  imageCache[a.src] = img;
+                const img = imageCache[a.src];
+                if (img) {
+                  ctx.save();
+                  ctx.translate(a.left, a.top);
+                  ctx.rotate((a.rotation || 0) * Math.PI / 180);
+                  ctx.drawImage(img, 0, 0, a.width, a.height);
+                  ctx.restore();
                 }
-                ctx.save();
-                ctx.translate(a.left, a.top);
-                ctx.rotate((a.rotation || 0) * Math.PI / 180);
-                ctx.drawImage(img, 0, 0, a.width, a.height);
-                ctx.restore();
               }
           };
 
-          // Save PNG frame
           const buffer = canvas.toBuffer('image/png');
-          fs.writeFileSync(path.join(tempDir, `frame_${i}.png`), buffer);
+          frameStream.push(buffer);
+
+          if (i % 100 === 0 || i === totalFrames - 1) {
+            console.log(`Rendered frame ${i + 1} / ${totalFrames}`);
+          }
+
         }
 
-        // Use ffmpeg to overlay frames on video
-        ffmpeg()
-          .input(videoPath)
-          .input(path.join(tempDir, 'frame_%d.png'))
-          .inputFPS(fps)
-          .complexFilter('[0:v][1:v] overlay=0:0')
-          .outputOptions([
-            '-c:v', 'libx264',
-            '-pix_fmt', 'yuv420p'
-          ])
-          .on('error', (err) => reject(err))
-          .on('end', () => {
-            fs.readdirSync(tempDir).forEach(f => fs.unlinkSync(path.join(tempDir, f)));
-            const url = new URL(videoPath);
-            const relativePath = url.pathname; 
-            const absolutePath = path.join(__dirname, relativePath);
-            try {
-              if (fs.existsSync(absolutePath)) {
-                fs.unlinkSync(absolutePath);
-              }
-            } catch (err) {
-              console.error('Error deleting video file:', err);
-            }
-            resolve();
-          })
-          .save(outputPath);
+        frameStream.push(null); // Signal end of stream
+        
       });
     } catch (error) {
       reject(error);
