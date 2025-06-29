@@ -613,6 +613,9 @@ const italicText = () => {
 //free drawing 
 const [drawingMode, setDrawingMode] = useState(false); // true when free drawing tool is active
 const isDrawing = useRef(false); // true while user is dragging to draw
+const [pencolor,setpencolor]=useState("#ffffff");
+const [penwidth,setpenwidth]=useState(3);
+const [fredrawduration,setfredrawduration]=useState(10);
 
 const handleStageMouseDown = (e) => {
   if (!drawingMode) return;
@@ -624,13 +627,13 @@ const handleStageMouseDown = (e) => {
       id: String(shapes.length + 1),
       type: 'freedraw',
       points: [pos.x, pos.y],
-      stroke: '#df4b26',
-      strokeWidth: 4,
+      stroke: pencolor,
+      strokeWidth: penwidth,
       lineCap: 'round',
       lineJoin: 'round',
       tension: 0.5,
-      startTime:0,
-      endTime:Math.floor(videoElement.duration),
+      startTime:Math.floor(videoElement.currentTime),
+      endTime:Math.min(fredrawduration+Math.floor(videoElement.currentTime),Math.floor(videoElement.duration)),
     },
   ]);
 };
@@ -732,13 +735,108 @@ const handleJsonFile = (e) => {
       </div>
      
       <div className=" overflow-auto">
-        <div className={`${!isstarted ? 'hidden' : 'flex'}  h-full gap-20 py-9  items-center overflow-x-auto custom-scrollbar bg-blue-300 p-5`}>
+        <div className={`${!isstarted ? 'hidden' : 'flex'}  h-full gap-20 py-9 pl-8  items-center overflow-x-auto custom-scrollbar bg-blue-300 p-5`}>
 
-          <Tooltip text={drawingMode ? "Exit Draw" : "Draw"} className='flex items-center gap-2 relative group cursor-pointer' >
-            {drawingMode ? <LuPen onClick={() => setDrawingMode(!drawingMode)} color='white' size={30} /> : <LuPenOff onClick={() => setDrawingMode(!drawingMode)} color='white' size={30}/>}
-          </Tooltip>
+          
           <UploadImageModal/>
           <ImageURLModal/>
+          <Tooltip text={drawingMode ? "Disable Draw" : "Enable Draw"} className='flex items-center gap-2 relative group cursor-pointer' >
+            {drawingMode ? <LuPen onClick={() => setDrawingMode(!drawingMode)} color='white' size={30} /> : <LuPenOff onClick={() => setDrawingMode(!drawingMode)} color='white' size={30}/>}
+          </Tooltip>
+          <label
+            className={`${
+              !drawingMode
+                ? 'hidden'
+                : 'flex items-center gap-2 relative group cursor-pointer'
+            }`}
+          >
+            <MdOutlineColorLens color='white' size={30}/>
+            <span className="
+              absolute left-1/2 -translate-x-1/2 bottom-full mb-2
+              opacity-0 group-hover:opacity-100
+              bg-white text-blue-300 text-xs rounded px-2 py-1
+              transition-opacity duration-200 whitespace-nowrap
+              pointer-events-none z-10
+            ">
+              Stroke Color
+            </span>
+            <input
+              type="color"
+              value={pencolor}
+              onChange={(e)=>(setpencolor(e.target.value))}
+              style={{ marginLeft: 4, width: 32, height: 32, border: 'none', background: 'none', cursor: 'pointer' }}
+            />
+          </label>
+          <label
+            className={`${
+              !drawingMode
+                ? 'hidden'
+                : 'flex items-center gap-2 relative group cursor-pointer'
+            }`}
+          >
+            <MdOutlineLineWeight color='white' size={30}/>
+            <span className="
+              absolute left-1/2 -translate-x-1/2 bottom-full mb-2
+              opacity-0 group-hover:opacity-100
+              bg-white text-blue-300 text-xs rounded px-2 py-1
+              transition-opacity duration-200 whitespace-nowrap
+              pointer-events-none z-10
+            ">
+              Stroke Width
+            </span>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={penwidth}
+              onChange={(e)=>(setpenwidth(e.target.value))}
+              style={{
+                width: 70,
+                marginLeft: 4,
+                padding: '2px 8px',
+                border: '1px solid #ccc',
+                borderRadius: 4,
+                outline: 'none',
+                fontSize: 16,
+                background:'#fff',
+                cursor:'pointer',
+              }}
+            />
+          </label>
+          <label
+            className={`${!drawingMode ? 'hidden' : 'flex items-center gap-2 relative group cursor-pointer'} text-xl text-white font-bold font-sans`}
+          >
+            Duration
+            <span className="
+                absolute left-1/2 -translate-x-1/2 bottom-full mb-2
+                opacity-0 group-hover:opacity-100
+                bg-white text-blue-300 text-xs font-normal rounded px-2 py-1
+                transition-opacity duration-200 whitespace-nowrap
+                pointer-events-none z-10
+              ">
+                Set Overlay Duration From Start-Time
+            </span>
+            <input
+              type="number"
+              min={0}
+              max={Math.floor(videoElement.duration)-Math.floor(videoElement.currentTime)}
+              value={fredrawduration}
+              onChange={(e)=>{setfredrawduration(e.target.value)}}
+              style={{
+                width: 70,
+                marginLeft: 4,
+                padding: '2px 8px',
+                border: '1px solid #ccc',
+                borderRadius: 4,
+                outline: 'none',
+                fontSize: 16,
+                background:'#fff',
+                cursor:'pointer',
+                color: '#000',
+                fontWeight: 'normal'
+              }}
+            />
+          </label>
           <Tooltip text="Add Rectangle" className='flex items-center gap-2 relative group cursor-pointer' >
             <PiRectangle onClick={addRectangle} color='white' size={30}/>
           </Tooltip>
@@ -829,12 +927,12 @@ const handleJsonFile = (e) => {
             <input
               type="number"
               min={1}
-              max={20}
+              max={100}
               disabled={selectedId === null}
               value={selectedShape?.strokeWidth || 1}
               onChange={handleStrokeWidthChange}
               style={{
-                width: 50,
+                width: 70,
                 marginLeft: 4,
                 padding: '2px 8px',
                 border: '1px solid #ccc',
@@ -865,7 +963,7 @@ const handleJsonFile = (e) => {
               transition-opacity duration-200 whitespace-nowrap
               pointer-events-none z-10
             ">
-              stroke color
+              {!!selectedShape?.fill ? "Disable Fill" : "Enable Fill"}
             </span>
             <input
               type="checkbox"
@@ -977,7 +1075,7 @@ const handleJsonFile = (e) => {
               value={selectedShape?.fontSize || 1}
               onChange={handleFontSizeChange}
               style={{
-                width: 50,
+                width: 70,
                 marginLeft: 4,
                 padding: '2px 8px',
                 border: '1px solid #ccc',
@@ -1086,11 +1184,11 @@ const handleJsonFile = (e) => {
             <span className="
                 absolute left-1/2 -translate-x-1/2 bottom-full mb-2
                 opacity-0 group-hover:opacity-100
-                bg-white text-blue-300 text-xs rounded px-2 py-1
+                bg-white text-blue-300 font-normal text-xs rounded px-2 py-1
                 transition-opacity duration-200 whitespace-nowrap
                 pointer-events-none z-10
               ">
-                stroke color
+                Overlay Start-Time
               </span>
             <input
               type="number"
@@ -1121,11 +1219,11 @@ const handleJsonFile = (e) => {
             <span className="
                 absolute left-1/2 -translate-x-1/2 bottom-full mb-2
                 opacity-0 group-hover:opacity-100
-                bg-white text-blue-300 text-xs rounded px-2 py-1
+                bg-white text-blue-300 text-xs font-normal rounded px-2 py-1
                 transition-opacity duration-200 whitespace-nowrap
                 pointer-events-none z-10
               ">
-                stroke color
+                Overlay End-Time
               </span>
             <input
               type="number"
@@ -1156,11 +1254,11 @@ const handleJsonFile = (e) => {
             <span className="
                 absolute left-1/2 -translate-x-1/2 bottom-full mb-2
                 opacity-0 group-hover:opacity-100
-                bg-white text-blue-300 text-xs rounded px-2 py-1
+                bg-white text-blue-300 text-xs font-normal rounded px-2 py-1
                 transition-opacity duration-200 whitespace-nowrap
                 pointer-events-none z-10
               ">
-                stroke color
+                Set Overlay Duration From Start-Time
             </span>
             <input
               type="number"
