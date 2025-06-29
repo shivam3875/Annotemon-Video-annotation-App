@@ -1,10 +1,12 @@
 import React from 'react'
 import { useoverlayedvideourlContext } from '../Context/overlayedvideourlContext';
+import {usesocketidContext} from '../Context/socketidContext';
 
 const useOverlaywithURL = () => {
 
     const {setoverlayedvideourl}=useoverlayedvideourlContext();
-  
+    const {socketId} = usesocketidContext();
+    
     const overlaywithURL= async (videoURL, annotations)=>{
 
     try{
@@ -15,7 +17,8 @@ const useOverlaywithURL = () => {
             },
             body: JSON.stringify({
                 videoPath: videoURL,       // Server-side path
-                annotations: annotations   // Array ya JSON object
+                annotations: annotations,   // Array ya JSON object
+                socketId:socketId,
             })
         });
 

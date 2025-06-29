@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import {app,server} from "./sockets/socket.js"
 
 dotenv.config();
 
@@ -15,7 +16,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -80,7 +80,7 @@ app.post('/upload/image', upload.single('image'), (req, res) => {
 app.post('/overlay', async (req, res) => {
 
 try {
-  const { videoPath, annotations } = req.body;
+  const { videoPath, annotations,socketId } = req.body;
 
     if (!videoPath || !annotations) {
       return res.status(400).json({ error: 'Missing video or annotation' });
@@ -93,7 +93,7 @@ try {
     const outputFileName = `annotated_${Date.now()}.mp4`;
     const outputPath = path.join('output', outputFileName);
 
-    await render(videoPath, annotations, outputPath);
+    await render(videoPath, annotations, outputPath,socketId);
 
     const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
     res.json({ url: `${BASE_URL}/output/${outputFileName}` });
@@ -144,4 +144,4 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));  
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));  

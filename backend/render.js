@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { createCanvas,loadImage } from "canvas";
 import ffmpeg from "fluent-ffmpeg";
 import { Readable } from "stream";
+import {io} from "./sockets/socket.js"
 
 
 ffmpeg.setFfmpegPath("C:/Users/kumar/Downloads/ffmpeg/ffmpeg.exe");
@@ -82,7 +83,7 @@ function drawSmoothCurve(ctx, points, tension = 0.5) {
   ctx.stroke();
 }
 
-async function render(videoPath, annotations, outputPath) {
+async function render(videoPath, annotations, outputPath, socketId) {
   return new Promise((resolve, reject) => {
     try {
 
@@ -273,6 +274,15 @@ async function render(videoPath, annotations, outputPath) {
 
           if (i % 100 === 0 || i === totalFrames - 1) {
             console.log(`Rendered frame ${i + 1} / ${totalFrames}`);
+          }
+
+          const percent = Math.floor(((i + 1) / totalFrames) * 100);
+          console.log("perc",percent)
+          console.log("socketid",socketId)
+          if (socketId) {
+            console.log("perc==>",percent)
+            console.log("socketid==>",socketId)
+            io.to(socketId).emit("render-progress", { percent });
           }
 
         }

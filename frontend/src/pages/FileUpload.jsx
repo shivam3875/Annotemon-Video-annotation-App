@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useFileupload from '../hooks/useFileupload';
 import { Navigate } from 'react-router-dom';
 import { usevideourlContext } from '../Context/videourlContext';
 import Navbar from '../Components/Navbar';
 import { MdFileUpload } from "react-icons/md";
 import { MdOutlineVideoFile } from "react-icons/md";
-
+import { usesocketContext } from '../Context/socketContext';
+import {usesocketidContext} from '../Context/socketidContext';
+import { io } from "socket.io-client";
 
 
 function FileUpload() {
@@ -13,10 +15,20 @@ function FileUpload() {
   const {uploadfile} = useFileupload();
   const {VIDEO_URL} = usevideourlContext()
   const [msg,setmsg] = useState("Upload")
+  const {setSocket} = usesocketContext();
+  const {setSocketId} = usesocketidContext();
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
+
+useEffect(()=>{
+  const socket = io("http://localhost:5000"); 
+  setSocket(socket);
+  socket.on("socket-id", ({ socketId }) => {
+    setSocketId(socketId);
+  });
+},[])
 
   const handleSubmit = async (event) => {
     event.preventDefault();
