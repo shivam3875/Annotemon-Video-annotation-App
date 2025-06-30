@@ -24,15 +24,16 @@ import { TbLineHeight } from "react-icons/tb";
 import { RiFontColor } from "react-icons/ri";
 import { LuPenOff } from "react-icons/lu";
 import { LuPen } from "react-icons/lu";
-import { PiRectangle,PiCircle,PiLineSegmentLight,PiExport    } from "react-icons/pi";
+import { PiRectangle,PiCircle,PiLineSegmentLight} from "react-icons/pi";
 import { CiText } from "react-icons/ci";
 import { MdDeselect } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
 import { TfiLayoutMediaOverlayAlt2 } from "react-icons/tfi";
 import { useoverlayedvideourlContext } from '../Context/overlayedvideourlContext';
 import Tooltip from '../Components/Tooltip';
-import { FaFileImport } from "react-icons/fa";
 import { CiExport, CiImport  } from "react-icons/ci";
+import { MdOutlineVisibility,MdOutlineVisibilityOff  } from "react-icons/md";
+
 
 
 
@@ -55,7 +56,7 @@ const VideoOnCanvas = () => {
     return element;
   });
 
-  const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
+  const [videoSize, setVideoSize] = useState({ width: 1000, height: 600 });
   const [status, setStatus] = useState('Loading video...');
   const animationRef = useRef(null);
   const layerRef = useRef(null);
@@ -178,55 +179,56 @@ const videoY = 0;
 // }, [videoElement]);
 
 
-  const handlePlay = () => {
-    setStatus('');
-    videoElement.play();
-    if (layerRef.current) {
-      const anim = new window.Konva.Animation(() => {}, layerRef.current);
-      animationRef.current = anim;
-      anim.start();
-    }
-  };
+const handlePlay = () => {
+  setStatus('');
+  videoElement.play();
+  if (layerRef.current) {
+    const anim = new window.Konva.Animation(() => {}, layerRef.current);
+    animationRef.current = anim;
+    anim.start();
+  }
+};
 
-  const handlePause = () => {
-    videoElement.pause();
-    if (animationRef.current) {
-      animationRef.current.stop();
-    }
-  };
+const handlePause = () => {
+  videoElement.pause();
+  if (animationRef.current) {
+    animationRef.current.stop();
+  }
+};
 
-  const handleplaypause = ()=>{
-    setisstarted(true);
-    if(!isplay || videoElement.currentTime==videoElement.duration){
-      setisplay(true);
-      handlePlay();
-    }
-    else{
-      setisplay(false);
-      handlePause();
-    }
-  };
+const handleplaypause = ()=>{
+  setisstarted(true);
+  if(!isplay || videoElement.currentTime==videoElement.duration){
+    setisplay(true);
+    handlePlay();
+  }
+  else{
+    setisplay(false);
+    handlePause();
+  }
+};
 
-  const addRectangle = () => {
-    setShapes([
-      ...shapes,
-      {
-        id: String(shapes.length + 1),
-        type: 'rect',
-        x: Math.random() * 400,
-        y: Math.random() * 300,
-        width: 100,
-        height: 60,
-        rotation:0,
-        stroke: '#ff0000',
-        startTime:Math.floor(videoElement.currentTime),
-        endTime:Math.floor(videoElement.duration),
-        strokeWidth: 3,
-        fill: undefined,
-      },
-    ]);
-  };
 
+const addRectangle = () => {
+  setShapes([
+    ...shapes,
+    {
+      id: String(shapes.length + 1),
+      type: 'rect',
+      x: 50,
+      y: 50,
+      width: 100,
+      height: 100,
+      rotation:0,
+      stroke: '#000000',
+      startTime:Math.floor(videoElement.currentTime),
+      endTime:Math.floor(videoElement.duration),
+      visible:true,
+      strokeWidth: 3,
+      fill: undefined,
+    },
+  ]);
+};
 
 const addLine = () => {
   setShapes([
@@ -234,9 +236,10 @@ const addLine = () => {
     {
       id: String(shapes.length + 1),
       type: "line",
-      points: [100, 100, 200, 200], // [x1, y1, x2, y2]
-      stroke: "#00bfff",
-      strokeWidth: 3,
+      points: [100, 100, 300, 100], // [x1, y1, x2, y2]
+      stroke: "#00000",
+      strokeWidth: 10,
+      visible:true,
       startTime:Math.floor(videoElement.currentTime),
       endTime:Math.floor(videoElement.duration),
     },
@@ -249,8 +252,8 @@ const addText = () => {
     {
       id: String(shapes.length + 1),
       type: "text",
-      x: 150,
-      y: 150,
+      x: 100,
+      y: 100,
       text: "Add Text",
       textDecoration : "",
       fontSize: 24,
@@ -259,6 +262,7 @@ const addText = () => {
       fill: "#000000",
       fontFamily: "Arial",
       rotation:0,
+      visible:true,
       startTime:Math.floor(videoElement.currentTime),
       endTime:Math.floor(videoElement.duration),
     },
@@ -271,12 +275,13 @@ const addCircle = () => {
     {
       id: String(shapes.length + 1),
       type: 'circle',
-      x: Math.random() * 400,
-      y: Math.random() * 300,
-      radius: 40,
-      stroke: '#0000ff',
+      x: 150,
+      y: 150,
+      radius: 60,
+      stroke: '#000000',
       strokeWidth: 3,
       fill: undefined,
+      visible:true,
       startTime:Math.floor(videoElement.currentTime),
       endTime:Math.floor(videoElement.duration),
     },
@@ -359,6 +364,16 @@ const handleFillToggle = e => {
   }
 };
 
+const handleVisibilityToggle = e => {
+  if (selectedId !== null) {
+    setShapes(shapes.map(shape =>
+      shape.id === selectedId
+        ? { ...shape, visible: e.target.checked }
+        : shape
+    ));
+  }
+};
+
 const exportShapesAsVideoRelativeJSON = () => {
   const relShapes = shapes.map(shape => {
     if (shape.type === 'rect') {
@@ -372,6 +387,7 @@ const exportShapesAsVideoRelativeJSON = () => {
         strokeWidth: shape.strokeWidth,
         rotation:shape.rotation,
         fill: shape.fill,
+        visible:shape.visible,
         startTime:shape.startTime,
         endTime:shape.endTime,
       };
@@ -586,7 +602,6 @@ const underLineText = () => {
     }
 };
 
-
 const boldText = () => {
     if (selectedId !== null) {
       setShapes(shapes.map(shape =>
@@ -595,12 +610,10 @@ const boldText = () => {
     }
 };
 
-
 const handleDeselect=()=>{
   setSelectedId(null)
   setSelectedType(null)
 }
-
 
 const italicText = () => {
     if (selectedId !== null) {
@@ -613,8 +626,8 @@ const italicText = () => {
 //free drawing 
 const [drawingMode, setDrawingMode] = useState(false); // true when free drawing tool is active
 const isDrawing = useRef(false); // true while user is dragging to draw
-const [pencolor,setpencolor]=useState("#ffffff");
-const [penwidth,setpenwidth]=useState(3);
+const [pencolor,setpencolor]=useState("#000000");
+const [penwidth,setpenwidth]=useState(5);
 const [fredrawduration,setfredrawduration]=useState(10);
 
 const handleStageMouseDown = (e) => {
@@ -632,8 +645,9 @@ const handleStageMouseDown = (e) => {
       lineCap: 'round',
       lineJoin: 'round',
       tension: 0.5,
+      visible:false,
       startTime:Math.floor(videoElement.currentTime),
-      endTime:Math.min(fredrawduration+Math.floor(videoElement.currentTime),Math.floor(videoElement.duration)),
+      endTime:Math.min((fredrawduration+Math.floor(videoElement.currentTime)),Math.floor(videoElement.duration)),
     },
   ]);
 };
@@ -658,7 +672,6 @@ const handleStageMouseUp = () => {
   isDrawing.current = false;
 };
 
-
 //image upload
 const {IMAGE_URL,setImageurl}=useimageurlContext();
 useEffect(() => {
@@ -671,19 +684,18 @@ useEffect(() => {
         x: 150,
         y: 150,
         rotation:0,
-        width:80,
-        height:100,
+        visible:true,
+        width:120,
+        height:150,
         src:IMAGE_URL,
         startTime:Math.floor(videoElement.currentTime),
         endTime:Math.floor(videoElement.duration),
       },
     ]);
   }
-  // setImageurl(null);
+  setImageurl(null);
   
 }, [IMAGE_URL]);
-
-
 
 //render imported jason
 const handleJsonFile = (e) => {
@@ -741,7 +753,7 @@ const handleJsonFile = (e) => {
           <UploadImageModal/>
           <ImageURLModal/>
           <Tooltip text={drawingMode ? "Disable Draw" : "Enable Draw"} className='flex items-center gap-2 relative group cursor-pointer' >
-            {drawingMode ? <LuPen onClick={() => setDrawingMode(!drawingMode)} color='white' size={30} /> : <LuPenOff onClick={() => setDrawingMode(!drawingMode)} color='white' size={30}/>}
+            {!drawingMode ? <LuPen onClick={() => setDrawingMode(!drawingMode)} color='white' size={30} /> : <LuPenOff onClick={() => setDrawingMode(!drawingMode)} color='white' size={30}/>}
           </Tooltip>
           <label
             className={`${
@@ -821,7 +833,7 @@ const handleJsonFile = (e) => {
               min={0}
               max={Math.floor(videoElement.duration)-Math.floor(videoElement.currentTime)}
               value={fredrawduration}
-              onChange={(e)=>{setfredrawduration(e.target.value)}}
+              onChange={(e)=>{setfredrawduration(Number(e.target.value))}}
               style={{
                 width: 70,
                 marginLeft: 4,
@@ -882,6 +894,38 @@ const handleJsonFile = (e) => {
           <Tooltip text="Delete" className='flex items-center gap-2 relative group cursor-pointer' >
             <AiOutlineDelete className={`${selectedId === null ? 'hidden' : 'inline'} `} onClick={handleDelete} color='white' size={30}/>
           </Tooltip>
+          <label
+            className={`${
+              selectedId === null
+                ? 'hidden'
+                : 'flex items-center gap-2 relative group cursor-pointer'
+            } text-xl text-white font-bold`}
+          >
+            {!!selectedShape?.visible ? <MdOutlineVisibilityOff onClick={handleVisibilityToggle} size={30} /> : <MdOutlineVisibility onClick={handleVisibilityToggle} size={30} />}
+            <span className="
+              absolute left-1/2 -translate-x-1/2 bottom-full mb-2
+              opacity-0 group-hover:opacity-100
+              bg-white text-blue-300 font-normal text-xs rounded px-2 py-1
+              transition-opacity duration-200 whitespace-nowrap
+              pointer-events-none z-10
+            ">
+              {!!selectedShape?.visible ? "Disable Full Time Visibility" : "Enable Full Time Visibility "}
+            </span>
+            <input
+              type="checkbox"
+              disabled={selectedId === null}
+              checked={selectedShape?.visible}
+              onChange={handleVisibilityToggle}
+              style={{
+                marginLeft: 4,
+                width: 18,
+                height: 18,
+                accentColor: '#3498db', // modern browsers support it
+                cursor: selectedId === null ? 'not-allowed' : 'pointer',
+                display:"none"
+              }}
+            />
+          </label>
           <label
             className={`${
               selectedId === null || selectedType === 'text' || selectedType === 'image'
@@ -1309,12 +1353,12 @@ const handleJsonFile = (e) => {
               if (shape.type === 'rect') {
                 return (
                   <Rectangle
-                    className={`${shape.startTime ? 'hidden' : 'flex'}`}
                     key={shape.id}
                     shapeProps={shape}
                     isSelected={shape.id === selectedId}
                     onSelect={() => {setSelectedId(shape.id); setSelectedType(shape.type);}}
                     onChange={newAttrs => handleShapeChange(i, newAttrs)}
+                    visible={shape.visible || (Math.floor(videoElement.currentTime)>=shape.startTime && Math.floor(videoElement.currentTime)<=shape.endTime)}
                   />
                 );
               }
@@ -1326,6 +1370,7 @@ const handleJsonFile = (e) => {
                     isSelected={shape.id === selectedId}
                     onSelect={() => {setSelectedId(shape.id); setSelectedType(shape.type);}}
                     onChange={newAttrs => handleShapeChange(i, newAttrs)}
+                    visible={shape.visible || (Math.floor(videoElement.currentTime)>=shape.startTime && Math.floor(videoElement.currentTime)<=shape.endTime)}
                   />
                 );
               }
@@ -1337,6 +1382,7 @@ const handleJsonFile = (e) => {
                     isSelected={shape.id === selectedId}
                     onSelect={() => {setSelectedId(shape.id); setSelectedType(shape.type);}}
                     onChange={newAttrs => handleShapeChange(i, newAttrs)}
+                    visible={shape.visible || (Math.floor(videoElement.currentTime)>=shape.startTime && Math.floor(videoElement.currentTime)<=shape.endTime)}
                   />
                 );
               }
@@ -1348,6 +1394,7 @@ const handleJsonFile = (e) => {
                     isSelected={shape.id === selectedId}
                     onSelect={() => {setSelectedId(shape.id); setSelectedType(shape.type);}}
                     onChange={newAttrs => handleShapeChange(i, newAttrs)}
+                    visible={shape.visible || (Math.floor(videoElement.currentTime)>=shape.startTime && Math.floor(videoElement.currentTime)<=shape.endTime)}
                   />
                 );
               }
@@ -1364,6 +1411,7 @@ const handleJsonFile = (e) => {
                     lineJoin={shape.lineJoin}
                     tension={shape.tension}
                     globalCompositeOperation="source-over"
+                    visible={shape.visible || (Math.floor(videoElement.currentTime)>=shape.startTime && Math.floor(videoElement.currentTime)<=shape.endTime)}
                   />
                 );
               }
@@ -1375,6 +1423,7 @@ const handleJsonFile = (e) => {
                     isSelected={shape.id === selectedId}
                     onSelect={() => { setSelectedId(shape.id); setSelectedType(shape.type); }}
                     onChange={newAttrs => handleShapeChange(i, newAttrs)}
+                    visible={shape.visible || (Math.floor(videoElement.currentTime)>=shape.startTime && Math.floor(videoElement.currentTime)<=shape.endTime)}
                   />
                 );
               }
@@ -1384,10 +1433,11 @@ const handleJsonFile = (e) => {
             {status && (
               <Text
                 fontSize={34}
-                width={120}
+                fill={'#90cdf4'}
+                width={ status==="PLAY..." ? 120 : 300}
                 height={34}
                 text={status}
-                x={videoSize.width/2-60}
+                x={ status==="PLAY..." ? videoSize.width/2-60 : videoSize.width/2-100}
                 y={videoSize.height/2-17}
               />
             )}

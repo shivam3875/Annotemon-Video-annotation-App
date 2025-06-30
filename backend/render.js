@@ -150,6 +150,8 @@ async function render(videoPath, annotations, outputPath, socketId) {
           .on('end', () => resolve())
           .save(outputPath);
 
+          let lastEmit = 0;
+
         // Draw overlay frame PNGs
         for (let i = 0; i < totalFrames; i++) {
           const currentTime = i / fps;
@@ -277,12 +279,13 @@ async function render(videoPath, annotations, outputPath, socketId) {
           }
 
           const percent = Math.floor(((i + 1) / totalFrames) * 100);
-          console.log("perc",percent)
-          console.log("socketid",socketId)
-          if (socketId) {
-            console.log("perc==>",percent)
-            console.log("socketid==>",socketId)
+          // if (socketId) {
+          //   io.to(socketId).emit("render-progress", { percent });
+          // }
+          const now = Date.now();
+          if (percent === 100 || now - lastEmit > 1000) { // हर 1s या 100% पर emit
             io.to(socketId).emit("render-progress", { percent });
+            lastEmit = now;
           }
 
         }

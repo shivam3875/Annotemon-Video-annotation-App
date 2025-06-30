@@ -3,7 +3,7 @@ import {Circle, Line,} from 'react-konva';
 
 
 
-const EditableLineShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const EditableLineShape = ({ shapeProps, isSelected, onSelect, onChange, visible  }) => {
   const shapeRef = useRef();
 
   // Handle endpoint drag
@@ -24,6 +24,7 @@ const EditableLineShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
         onClick={onSelect}
         ref={shapeRef}
         {...shapeProps}
+        visible={visible}
         draggable={false} // Line itself is not draggable
       />
       {/* Endpoints as draggable circles */}
@@ -33,6 +34,7 @@ const EditableLineShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
           <Circle
             x={shapeProps.points[0]}
             y={shapeProps.points[1]}
+            visible={visible}
             radius={Math.max(6,shapeProps.strokeWidth)}
             fill={shapeProps.stroke}
             draggable
@@ -43,6 +45,7 @@ const EditableLineShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
           <Circle
             x={shapeProps.points[2]}
             y={shapeProps.points[3]}
+            visible={visible}
             radius={Math.max(6,shapeProps.strokeWidth)}
             fill={shapeProps.stroke}
             draggable

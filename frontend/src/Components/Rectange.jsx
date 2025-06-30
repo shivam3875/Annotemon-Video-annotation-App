@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Rect, Transformer} from 'react-konva';
 
 
-const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const Rectangle = ({ shapeProps, isSelected, onSelect, onChange, visible }) => {
   const shapeRef = useRef();
   const trRef = useRef();
 
@@ -17,8 +17,10 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
     <>
       <Rect
         onClick={onSelect}
+        
         ref={shapeRef}
         {...shapeProps}
+        visible={visible}
         draggable
         offsetX={0}
         offsetY={0}

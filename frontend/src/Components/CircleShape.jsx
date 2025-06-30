@@ -2,7 +2,7 @@ import { useEffect, useRef} from 'react';
 import {Circle, Transformer} from 'react-konva';
 
 
-const CircleShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const CircleShape = ({ shapeProps, isSelected, onSelect, onChange, visible  }) => {
   const shapeRef = useRef();
   const trRef = useRef();
 
@@ -19,6 +19,7 @@ const CircleShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
         onClick={onSelect}
         ref={shapeRef}
         {...shapeProps}
+        visible={visible}
         draggable
         onDragEnd={e => {
           onChange({

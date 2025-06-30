@@ -5,6 +5,7 @@ import { usesocketContext } from '../Context/socketContext';
 function ProgressBarComponent() {
   const [progress, setProgress] = useState(0);
   const {socket} = usesocketContext();
+
   useEffect(() => {
 
     socket.on("render-progress", ({ percent }) => {
@@ -17,9 +18,21 @@ function ProgressBarComponent() {
     };
   }, []);
 
+  // useEffect(() => {
+  // const handler = ({ percent }) => {
+  //   setProgress(percent);
+  // };
+  // socket.on("render-progress", handler);
+
+  // return () => {
+  //   socket.off("render-progress", handler);
+  //   // socket.disconnect(); // इसे मत लगाओ!
+  // };
+// }, [socket]);
+
   return (
     <div>
-      <div style={{ width: "100%", border: "1px solid #ccc", height: "30px", marginBottom: "10px" }}>
+      <div className="border-2 border-blue-300" style={{ width: "100%", height: "30px", marginBottom: "10px" }}>
         <div style={{
           width: `${progress}%`,
           height: "100%",
@@ -27,7 +40,7 @@ function ProgressBarComponent() {
           transition: "width 0.3s"
         }}></div>
       </div>
-      <div>{progress}% rendered</div>
+      <div className="text-blue-300">{progress}% rendered</div>
     </div>
   );
 }

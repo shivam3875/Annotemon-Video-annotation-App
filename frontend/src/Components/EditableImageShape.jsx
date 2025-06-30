@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Image, Transformer } from "react-konva";
 import useImage from "../hooks/useImage";
 
-const EditableImageShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const EditableImageShape = ({ shapeProps, isSelected, onSelect, onChange, visible  }) => {
   const shapeRef = useRef();
   const trRef = useRef();
   const [img] = useImage(shapeProps.src, "anonymous");
@@ -20,6 +20,7 @@ const EditableImageShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
         ref={shapeRef}
         image={img}
         {...shapeProps}
+        visible={visible}
         draggable
         onClick={onSelect}
         onTap={onSelect}

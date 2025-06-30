@@ -35,7 +35,7 @@ function DownloadOverlayedVideo() {
   <>
     <div className='h-screen flex items-center flex-col gap-64'>
       <Navbar />
-        <button className={`${overlayedvideourl!=="" ? 'text-white bg-[#3498db] cursor-pointer' : 'text-black bg-white border-2 cursor-not-allowed'} p-7 rounded-2xl text-xl font-bold`} disabled={overlayedvideourl!=="" ? false : true} onClick={handleDownload}>{overlayedvideourl!=="" ? <>Download <FaArrowAltCircleDown className="inline" size={35} /></> : <><ProgressBarComponent/></>}  </button>
+        <button className={`${overlayedvideourl!=="" ? 'text-white bg-[#3498db] cursor-pointer' : ' bg-white border-2 border-blue-300 cursor-not-allowed'} p-7 rounded-2xl text-xl font-bold`} disabled={overlayedvideourl!=="" ? false : true} onClick={handleDownload}>{overlayedvideourl!=="" ? <>Download <FaArrowAltCircleDown className="inline" size={35} /></> : <><ProgressBarComponent/></>}  </button>
     </div>
  </>
 

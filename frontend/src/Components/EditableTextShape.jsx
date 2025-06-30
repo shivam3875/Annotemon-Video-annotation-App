@@ -3,7 +3,7 @@ import {Text, Transformer} from 'react-konva';
 
 
 
-const EditableTextShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
+const EditableTextShape = ({ shapeProps, isSelected, onSelect, onChange, visible  }) => {
   const shapeRef = useRef();
   const trRef = useRef();
 
@@ -20,6 +20,7 @@ const EditableTextShape = ({ shapeProps, isSelected, onSelect, onChange }) => {
       <Text
         ref={shapeRef}
         {...shapeProps}
+        visible={visible}
         draggable
         onClick={onSelect}
         onDragEnd={e => {
