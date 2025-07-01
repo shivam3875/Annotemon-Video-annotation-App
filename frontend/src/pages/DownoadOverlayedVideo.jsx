@@ -25,7 +25,8 @@ function DownloadOverlayedVideo() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setoverlayedvideourl(null);
+    // setoverlayedvideourl(null);
+    setTimeout(() => setoverlayedvideourl(null), 1000); // 1 second delay
   };
 
   return (

@@ -148,7 +148,10 @@ async function render(videoPath, annotations, outputPath, socketId) {
             reject(err)
           })
           .on('end', () => resolve())
-          .save(outputPath);
+          .save(outputPath)
+          // .format('mp4')
+          // .pipe(uploadStream, { end: true });
+
 
           let lastEmit = 0;
 

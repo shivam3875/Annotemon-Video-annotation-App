@@ -18,19 +18,10 @@ function ProgressBarComponent() {
     };
   }, []);
 
-  // useEffect(() => {
-  // const handler = ({ percent }) => {
-  //   setProgress(percent);
-  // };
-  // socket.on("render-progress", handler);
-
-  // return () => {
-  //   socket.off("render-progress", handler);
-  //   // socket.disconnect(); // इसे मत लगाओ!
-  // };
-// }, [socket]);
-
   return (
+
+    progress==100 ? <div className="text-blue-300 text font-normal"> Video Being Ready To DownLoad...  </div> :
+
     <div>
       <div className="border-2 border-blue-300" style={{ width: "100%", height: "30px", marginBottom: "10px" }}>
         <div style={{

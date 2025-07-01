@@ -1,14 +1,19 @@
 import useImageFileupload from '../hooks/useImageFileUpload';
 import { LuImageUp } from "react-icons/lu";
+import { useState } from 'react';
 
 
 
 const UploadImageModal = () => {
 
   const {uploadimagefile} = useImageFileupload();
+  const [progress, setProgress] = useState(0);
 
   const handleFileChange = async (e) => {
-    await uploadimagefile(e.target.files[0]);
+    const file = e.target.files[0];
+  if (file) {
+    await uploadimagefile(file, setProgress);
+  }
   }
 
 

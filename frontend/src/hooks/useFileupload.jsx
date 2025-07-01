@@ -1,39 +1,47 @@
 import { usevideourlContext } from "../Context/videourlContext";
 
-
 const useFileupload = () => {
+  const { setvideourl } = usevideourlContext();
 
-    const {setvideourl}=usevideourlContext()
-  
-    const uploadfile= async (file)=>{
+  const uploadfile = async (file, onProgress) => {
+    const formData = new FormData();
+    formData.append('file', file); // 'file' field name देना है
+    formData.append('upload_preset', 'Annotation'); // Cloudinary में बनाया हुआ unsigned preset
+    formData.append('tags', 'preset-Annotation'); //addition
 
-        const formData = new FormData();
-        formData.append('video', file);
+    // Cloudinary का endpoint
+    const url = "https://api.cloudinary.com/v1_1/dw6w4c618/video/upload";
 
-    try{
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
 
-        const response = await fetch("http://localhost:5000/upload", {
-            method: "POST",
-            body: formData,
-        });
-
-        const data = await response.json();
-        console.log("Upload result:", data.url);
-
-        if(data.error){
-            throw new Error(data.error);
+      xhr.upload.onprogress = function(event) {
+        if (event.lengthComputable && onProgress) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent); // progress callback
         }
+      };
 
-        setvideourl(data.url);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          setvideourl(data.secure_url); // या data.url
+          resolve(data);
+        } else {
+          reject(new Error("Cloudinary upload failed"));
+        }
+      };
 
-    } 
-    catch(error){
-        console.log(error.message)
-    }
-  }
+      xhr.onerror = function() {
+        reject(new Error("Network error"));
+      };
 
-  return {uploadfile}
-}
+      xhr.send(formData);
+    });
+  };
 
+  return { uploadfile };
+};
 
-export default useFileupload
+export default useFileupload;

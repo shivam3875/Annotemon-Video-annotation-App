@@ -8,6 +8,7 @@ import { MdOutlineVideoFile } from "react-icons/md";
 import { usesocketContext } from '../Context/socketContext';
 import {usesocketidContext} from '../Context/socketidContext';
 import { io } from "socket.io-client";
+import ProgressBarComponentForFileUpload from "../Components/ProgressBarComponentForFileUpload"
 
 
 function FileUpload() {
@@ -17,6 +18,7 @@ function FileUpload() {
   const [msg,setmsg] = useState("Upload")
   const {setSocket} = usesocketContext();
   const {setSocketId} = usesocketidContext();
+   const [progress, setProgress] = useState(0);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -37,7 +39,8 @@ useEffect(()=>{
       return;
     }
     setmsg("File Being Uploaded...")
-    await uploadfile(file);
+    await uploadfile(file,setProgress);
+    console.log(progress);
   };
 
   return (
@@ -46,12 +49,12 @@ useEffect(()=>{
 
     <div className='h-screen flex items-center flex-col gap-64'>
       <Navbar />
-      <form className='bg-[#3498db] inline w-fit py-7 px-14 rounded-2xl' onSubmit={handleSubmit}>
+      <form className={`${msg=="Upload" ? 'bg-[#3498db]' : 'bg-white'} inline w-fit py-7 px-14 rounded-2xl `} onSubmit={handleSubmit}>
         <label className='text-white text-xl font-bold cursor-pointer' htmlFor="fup">
           {file ? "" :  <div className='flex gap-2' > Choose File <MdOutlineVideoFile size={30} /></div> }
           <input className='hidden' type="file" accept="video/*" id='fup'  onChange={handleFileChange} />
         </label>
-        {file ? <button className='text-white text-2xl flex items-center font-bold cursor-pointer' type="submit">{msg}  <MdFileUpload size={40}/></button> : <></>}
+        {file ? <button className='text-white text-2xl flex items-center font-bold cursor-pointer' type="submit"> <> { msg=="Upload" ? <> {msg}  <MdFileUpload size={40}/> </> : <ProgressBarComponentForFileUpload progress={progress}/> } </> </button> : <></>}
       </form>
     </div>
   );

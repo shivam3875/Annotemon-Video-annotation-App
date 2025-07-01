@@ -1329,7 +1329,7 @@ const handleJsonFile = (e) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 custom-scrollbar overflow-auto">
         <Stage
           className='box-border flex items-center justify-center mt-10'
           height={videoSize.height}
@@ -1490,15 +1490,15 @@ const handleJsonFile = (e) => {
         </div>
         <div className='flex justify-between items-center' style={{ width: videoSize.width, margin: '12px auto', position: 'relative'}}>
           <h3 className='text-blue-300'>
-            {String(Math.floor(videoElement.currentTime / 60)).padStart(2, '0')} :
-            {String(Math.floor(videoElement.currentTime % 60)).padStart(2, '0')}
+            {String(Math.floor(videoElement.currentTime / 60)).padStart(2, '0') || "00" }:
+            {String(Math.floor(videoElement.currentTime % 60)).padStart(2, '0') || "00" }
           </h3>
           <button className='cursor-pointer' onClick={()=>{videoElement.currentTime-=10}}><MdOutlineReplay10 className='text-blue-300' size={40}/></button>
           <button className='cursor-pointer' onClick={handleplaypause}>{isplay && videoElement.currentTime !==videoElement.duration ? <FaRegCirclePause className='text-blue-300' size={40}/> : <FaRegCirclePlay className='text-blue-300' size={40}/>}</button>
           <button className='cursor-pointer' onClick={()=>{videoElement.currentTime+=10}}><MdOutlineForward10 className='text-blue-300' size={40}/></button>
           <h3 className='text-blue-300'>
-            {String(Math.floor(videoElement.duration / 60)).padStart(2, '0')} :
-            {String(Math.floor(videoElement.duration % 60)).padStart(2, '0')}
+            {String(Math.floor(videoElement.duration / 60)).padStart(2, '0') || "00" }:
+            {String(Math.floor(videoElement.duration % 60)).padStart(2, '0') || "00" }
           </h3>
 
         </div>
