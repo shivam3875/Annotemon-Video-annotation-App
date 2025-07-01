@@ -113,7 +113,7 @@ async function cleanupOldCloudinaryFilesByPreset(maxAgeMs = 3600000) {
 }
 
 setInterval(() => {
-  cleanupOldCloudinaryFilesByPreset(60000)
+  cleanupOldCloudinaryFilesByPreset(3600000)
     .catch(err => console.error('Cloudinary cleanup error:', err));
 }, 60 * 60* 1000);
 
