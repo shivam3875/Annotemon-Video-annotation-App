@@ -6,8 +6,8 @@ import { Readable } from "stream";
 import {io} from "./sockets/socket.js"
 
 
-ffmpeg.setFfmpegPath("C:/Users/kumar/Downloads/ffmpeg/ffmpeg.exe");
-ffmpeg.setFfprobePath("C:/Users/kumar/Downloads/ffmpeg/ffprobe.exe");
+// ffmpeg.setFfmpegPath("C:/Users/kumar/Downloads/ffmpeg/ffmpeg.exe");
+// ffmpeg.setFfprobePath("C:/Users/kumar/Downloads/ffmpeg/ffprobe.exe");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
