@@ -10,7 +10,7 @@ const useOverlaywithURL = () => {
     const overlaywithURL= async (videoURL, annotations)=>{
 
     try{
-        const res = await fetch("http://localhost:5000/overlay", {
+        const res = await fetch("https://annotemon-video-annotation-app.onrender.com/overlay", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
