@@ -379,8 +379,8 @@ const exportShapesAsVideoRelativeJSON = () => {
     if (shape.type === 'rect') {
       return {
         type: 'rect',
-        left: (shape.x - videoX),
-        top: (shape.y - videoY),
+        x: (shape.x - videoX),
+        y: (shape.y - videoY),
         width: shape.width,
         height: shape.height,
         stroke: shape.stroke,
@@ -395,8 +395,8 @@ const exportShapesAsVideoRelativeJSON = () => {
     if (shape.type === 'circle') {
       return {
         type: 'circle',
-        left: (shape.x - videoX),
-        top: (shape.y - videoY),
+        x: (shape.x - videoX),
+        y: (shape.y - videoY),
         radius:shape.radius,
         stroke: shape.stroke,
         strokeWidth: shape.strokeWidth,
@@ -418,8 +418,8 @@ const exportShapesAsVideoRelativeJSON = () => {
     if (shape.type === 'text') {
       return {
         type: 'text',
-        left: (shape.x - videoX),
-        top: (shape.y - videoY),
+        x: (shape.x - videoX),
+        y: (shape.y - videoY),
         text:shape.text,
         textDecoration:shape.textDecoration,
         fontSize:shape.fontSize,
@@ -445,8 +445,8 @@ const exportShapesAsVideoRelativeJSON = () => {
     if (shape.type === 'image') {
       return {
         type: 'image',
-        left: (shape.x - videoX),
-        top: (shape.y - videoY),
+        x: (shape.x - videoX),
+        y: (shape.y - videoY),
         width: shape.width,
         height: shape.height,
         rotation: shape.rotation,
@@ -1447,6 +1447,9 @@ const handleJsonFile = (e) => {
       className='bg-blue-200'
       style={{ width: videoSize.width, height: 10, borderRadius: 5, margin: '12px auto', position: 'relative', cursor: 'pointer' }}
       onClick={e => {
+        if(videoElement.currentTime===videoElement.duration){
+          setisplay(false);
+        }
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const percent = x / rect.width;
